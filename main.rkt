@@ -89,10 +89,21 @@
             (with-handlers ([exn:fail:contract? (lambda (exn) '())])
               (list (syntax-taint (datum->syntax #f expr))))))))
 
+(define-syntax (process stx)
+  (define/syntax-parse (_ x) stx)
+  (define all-vars
+    (append
+     (syntax-find-local-variables #'x)
+     (match (assoc (syntax-local-phase-level) (syntax-local-module-required-identifiers #f #t))
+       [#f '()]
+       [(cons _ xs) xs])))
+  (match (closest (id->string #'x) (map id->string all-vars))
+    [#f (raise-unbound-error "unbound identifier" #'x "")]
+    [y (raise-unbound-error "unbound identifier" #'x (format "\n  suggestion: do you mean `~a'?" y))]))
+
 (define-syntax-parser #%top
   [(_ . x:id)
    #:when (syntax-transforming-module-expression?)
-   (match (closest (id->string #'x) (map id->string (syntax-find-local-variables this-syntax)))
-     [#f (raise-unbound-error "unbound identifier" #'x "")]
-     [y (raise-unbound-error "unbound identifier" #'x (format "\n  suggestion: do you mean `~a'?" y))])]
+   (syntax-local-lift-provide #'(expand (process x)))
+   #'(void)]
   [(_ . x) #'(racket:#%top . x)])
