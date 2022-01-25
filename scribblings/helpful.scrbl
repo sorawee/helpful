@@ -4,7 +4,7 @@
                     (except-in racket/base #%top)]]
 
 @title{helpful: suggests a closest variable name on unbound identifier error.}
-@author{sorawee}
+@author[@author+email["Sorawee Porncharoenwase" "sorawee.pwase@gmail.com"]]
 
 @defmodule[helpful]
 
