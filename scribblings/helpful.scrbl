@@ -13,6 +13,8 @@ Simply use @racket[(require helpful)] where you want this feature.
 
 The definition of ``closest'' is according to the @link["https://en.wikipedia.org/wiki/Levenshtein_distance"]{Levenshtein distance}.
 
+The module requires Racket 8.7 at minimum.
+
 @section{Examples}
 
 @examples[

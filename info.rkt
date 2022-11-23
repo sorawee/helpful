@@ -1,6 +1,7 @@
 #lang info
 (define collection "helpful")
-(define deps '("base" "levenshtein"))
+(define deps '(["base" #:version "8.6.0.6"]
+               "levenshtein"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 (define scribblings '(("scribblings/helpful.scrbl" ())))
 (define pkg-desc "Helpfully suggest a closest variable name on unbound identifier error.")
