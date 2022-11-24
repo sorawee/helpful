@@ -10,14 +10,16 @@
                      levenshtein))
 
 (begin-for-syntax
-  (define SCORE-THRESHOLD 5)
+  #;(define SCORE-THRESHOLD 5)
 
   (define (id->string x)
     (symbol->string (syntax-e x)))
 
   (define (closest id xs)
     (match (sort (map (λ (x) (cons (string-levenshtein id x) x)) xs) < #:key car)
-      [(cons (cons score y) _) #:when (< score SCORE-THRESHOLD) y]
+      [(cons (cons score y) _)
+       #;#;#:when (< score SCORE-THRESHOLD)
+       y]
       [_ #f]))
 
   (define (get-locals x)
@@ -38,20 +40,22 @@
     (define-values (pre post)
       (partition (λ (x) (hash-ref locals x #f)) (syntax-bound-symbols x)))
     ;; prioritize non-required identifiers
-    (append pre post)))
+    (append (sort pre symbol<?) (sort post symbol<?))))
 
-(define-syntax-parse-rule (process x)
-  #:do [(define all-vars (get-all-vars #'x))
-        (match (closest (id->string #'x) (map symbol->string all-vars))
-          [#f (raise-syntax-error #f "unbound identifier" #'x
-                                  #:exn exn:fail:syntax:unbound)]
-          [y (raise-syntax-error #f "unbound identifier" #'x #f null
-                                 (format "\n  suggestion: do you mean `~a'?" y)
-                                 #:exn exn:fail:syntax:unbound)])]
-  #'(void))
+(define-syntax-parser my-top
+  [(_ . x)
+   #:when (not (identifier-binding #'x))
+   (define all-vars (get-all-vars #'x))
+   (match (closest (id->string #'x) (map symbol->string all-vars))
+     [#f (raise-syntax-error #f "unbound identifier" #'x
+                             #:exn exn:fail:syntax:unbound)]
+     [y (raise-syntax-error #f "unbound identifier" #'x #f null
+                            (format "\n  suggestion: do you mean `~a'?" y)
+                            #:exn exn:fail:syntax:unbound)])]
+  [(_ . x) #'(racket:#%top . x)])
 
 (define-syntax-parser #%top
   [(_ . x:id)
    #:when (syntax-transforming-module-expression?)
-   #'(let () (process x))]
+   #'(let () (my-top . x))]
   [(_ . x) #'(racket:#%top . x)])

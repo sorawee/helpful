@@ -12,6 +12,8 @@ This module provides an ability to suggest a closest variable name on unbound id
 Simply use @racket[(require helpful)] where you want this feature.
 
 The definition of ``closest'' is according to the @link["https://en.wikipedia.org/wiki/Levenshtein_distance"]{Levenshtein distance}.
+It breaks a tie by the alphabetical order,
+with module and lexical bindings being prioritized over imported identifiers.
 
 The module requires Racket 8.7 at minimum.
 
@@ -58,3 +60,41 @@ The feature only works reliably for code at @tech[#:doc '(lib "scribblings/refer
 @defform[(#%top . x)]{
   Does what's described above.
 }
+
+@section{More examples}
+
+@examples[
+  #:label #f
+  (code:comment @#,elem{No suggestion for use-before-definition errors})
+  (module test racket
+    (require helpful)
+    an-id
+    (define an-id #f))
+  (eval:error (require 'test))
+  (code:comment @#,elem{Prioritization of module/lexical bindings})
+  (eval:error
+    (module test racket
+      (require helpful)
+      (define add2 #f)
+      (define add3 #f)
+      add4))
+  (code:comment @#,elem{Alphabetical order})
+  (eval:error
+    (module test racket
+      (require helpful)
+      (define add3 #f)
+      (define add2 #f)
+      add4))
+  (code:comment @#,elem{Consistent with Racket})
+  (eval:error
+    (module test racket
+      (require helpful)
+      add2
+      ()))
+  (code:comment @#,elem{Also consistent with Racket})
+  (eval:error
+    (module test racket
+      (require helpful)
+      add2
+      (let () ())))
+]
