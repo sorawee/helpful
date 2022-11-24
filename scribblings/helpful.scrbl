@@ -42,9 +42,6 @@ The module requires Racket 8.7 at minimum.
     (module test racket
       (require helpful)
       (defun (fact) 1)))
-  (code:comment @#,elem{No suggestion outside a @racket[module] or @hash-lang[]})
-  (require helpful)
-  (eval:error (let ([x 1]) y))
 ]
 
 @section{Limitations}
@@ -65,6 +62,9 @@ The feature only works reliably for code at @tech[#:doc '(lib "scribblings/refer
 
 @examples[
   #:label #f
+  (code:comment @#,elem{No suggestion outside a @racket[module] or @hash-lang[]})
+  (require helpful)
+  (eval:error (let ([x 1]) y))
   (code:comment @#,elem{No suggestion for use-before-definition errors})
   (module test racket
     (require helpful)
