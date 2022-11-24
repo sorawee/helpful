@@ -10,23 +10,21 @@
                      levenshtein))
 
 (begin-for-syntax
-  (define (id->string x)
-    (symbol->string (syntax-e x)))
-
   (define (closest id xs)
-    (argmin (λ (x) (string-levenshtein id x)) xs))
+    (match xs
+      ;; in a #lang that has empty namespace, empty xs might be possible
+      ['() #f]
+      [_ (argmin (λ (x) (string-levenshtein id x)) xs)]))
 
   (define (get-locals x)
-    (for/hash ([v (in-list (syntax-bound-symbols x))]
-               #:do [(define local?
-                       (match (identifier-binding (datum->syntax x v))
-                         ['lexical #t]
-                         [(list from-mod _ _ _ _ _ _)
-                          (define-values (mp _base)
-                            (module-path-index-split from-mod))
-                          (not mp)]
-                         [_ #f]))]
-               #:when local?)
+    (for/hasheq ([v (in-list (syntax-bound-symbols x))]
+                 #:do [(define local?
+                         (match (identifier-binding (datum->syntax x v))
+                           ['lexical #t]
+                           [(list (app module-path-index-split mp _) _ _ _ _ _ _)
+                            (not mp)]
+                           [_ #f]))]
+                 #:when local?)
       (values v #t)))
 
   (define (get-all-vars x)
@@ -40,7 +38,7 @@
   [(_ . x)
    #:when (not (identifier-binding #'x))
    (define all-vars (get-all-vars #'x))
-   (match (closest (id->string #'x) (map symbol->string all-vars))
+   (match (closest (symbol->string (syntax-e #'x)) (map symbol->string all-vars))
      [#f (raise-syntax-error #f "unbound identifier" #'x
                              #:exn exn:fail:syntax:unbound)]
      [y (raise-syntax-error #f "unbound identifier" #'x #f null
