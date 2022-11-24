@@ -38,20 +38,20 @@
     (define-values (pre post)
       (partition (λ (x) (hash-ref locals x #f)) (syntax-bound-symbols x)))
     ;; prioritize non-required identifiers
-    (append pre post))
+    (append pre post)))
 
-  (define (process x)
-    (define all-vars (get-all-vars x))
-    (match (closest (id->string x) (map symbol->string all-vars))
-      [#f (raise-syntax-error #f "unbound identifier" x
-                              #:exn exn:fail:syntax:unbound)]
-      [y (raise-syntax-error #f "unbound identifier" x #f null
-                             (format "\n  suggestion: do you mean `~a'?" y)
-                             #:exn exn:fail:syntax:unbound)])))
+(define-syntax-parse-rule (process x)
+  #:do [(define all-vars (get-all-vars #'x))
+        (match (closest (id->string #'x) (map symbol->string all-vars))
+          [#f (raise-syntax-error #f "unbound identifier" #'x
+                                  #:exn exn:fail:syntax:unbound)]
+          [y (raise-syntax-error #f "unbound identifier" #'x #f null
+                                 (format "\n  suggestion: do you mean `~a'?" y)
+                                 #:exn exn:fail:syntax:unbound)])]
+  #'(void))
 
 (define-syntax-parser #%top
   [(_ . x:id)
    #:when (syntax-transforming-module-expression?)
-   (process #'x)
-   #'(void)]
+   #'(let () (process x))]
   [(_ . x) #'(racket:#%top . x)])
