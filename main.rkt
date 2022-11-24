@@ -10,17 +10,11 @@
                      levenshtein))
 
 (begin-for-syntax
-  #;(define SCORE-THRESHOLD 5)
-
   (define (id->string x)
     (symbol->string (syntax-e x)))
 
   (define (closest id xs)
-    (match (sort (map (λ (x) (cons (string-levenshtein id x) x)) xs) < #:key car)
-      [(cons (cons score y) _)
-       #;#;#:when (< score SCORE-THRESHOLD)
-       y]
-      [_ #f]))
+    (argmin (λ (x) (string-levenshtein id x)) xs))
 
   (define (get-locals x)
     (for/hash ([v (in-list (syntax-bound-symbols x))]
