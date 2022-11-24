@@ -49,5 +49,5 @@
 (define-syntax-parser #%top
   [(_ . x:id)
    #:when (syntax-transforming-module-expression?)
-   #'(let () (my-top . x))]
+   #'(#%expression (my-top . x))]
   [(_ . x) #'(racket:#%top . x)])
