@@ -50,7 +50,7 @@ The module requires Racket 8.7 at minimum.
       (require helpful)
       (defun (fact) 1)))
   (code:comment @#,elem{Suggestion for a module to import})
-  (code:comment @#,elem{(only if Scribble and Racket documentation index is installed)})
+  (code:comment @#,elem{(only when Scribble and the Racket documentation index are installed)})
   (eval:error
     (module test racket/base
       (require helpful)
