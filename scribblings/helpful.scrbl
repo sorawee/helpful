@@ -3,22 +3,24 @@
          @for-label[helpful
                     (except-in racket/base #%top)]]
 
-@title{helpful: suggests a closest identifier name on unbound identifier error.}
+@title{helpful: providing suggestions on unbound identifier error.}
 @author[@author+email["Sorawee Porncharoenwase" "sorawee.pwase@gmail.com"]]
 
 @defmodule[helpful]
 
-This module provides an ability to provide suggestion on unbound identifier error.
+This module provides suggestions on unbound identifier error.
 Simply use @racket[(require helpful)] where you want this feature.
 
-One suggestion is hinting a ``closest'' identifier name.
+One suggestion is hinting a ``closest'' identifier name,
+which could be helpful when the error is caused by a typo mistake.
 The definition of ``closest'' is according to the @link["https://en.wikipedia.org/wiki/Levenshtein_distance"]{Levenshtein distance}.
 It breaks a tie by the alphabetical order,
 with module and lexical bindings being prioritized over imported identifiers.
 
-Another suggestion is hinting modules that could be imported to make the variable bound.
-This feature consults Scribble and thus is only available if Scribble and
-the Racket Documentation index are installed.
+Another suggestion is hinting modules that could be imported to make the identifier bound,
+which could be helpful when you forgot to import the desired module.
+This feature consults Scribble and the Racket documentation index and thus is only available
+if they are installed.
 
 The module requires Racket 8.7 at minimum.
 
@@ -48,6 +50,7 @@ The module requires Racket 8.7 at minimum.
       (require helpful)
       (defun (fact) 1)))
   (code:comment @#,elem{Suggestion for a module to import})
+  (code:comment @#,elem{(only if Scribble and Racket documentation index is installed)})
   (eval:error
     (module test racket/base
       (require helpful)
@@ -107,4 +110,9 @@ The feature only works reliably for code at @tech[#:doc '(lib "scribblings/refer
       (require helpful)
       add2
       (let () ())))
+ (code:comment @#,elem{Another module recommendation})
+  (eval:error
+    (module test racket
+      (require helpful)
+      format-id))
 ]
