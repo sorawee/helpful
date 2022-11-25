@@ -21,28 +21,30 @@
 
 (define database #f)
 
-(with-import ([scribble/xref xref-index
-                             entry-desc]
-              [setup/xref load-collections-xref]
-              [scribble/manual-struct exported-index-desc?
-                                      exported-index-desc-name
-                                      exported-index-desc-from-libs])
-  (define find-entry
+(define (find-entry x)
+  (with-import ([scribble/xref xref-index
+                               entry-desc]
+                [setup/xref load-collections-xref]
+                [scribble/manual-struct exported-index-desc?
+                                        exported-index-desc-name
+                                        exported-index-desc-from-libs])
+    ;; precondition: variables are all defined
+    (define (build-database!)
+      (set! database (make-hash))
+      (for ([e (in-list (xref-index (load-collections-xref)))]
+            #:do [(define desc (entry-desc e))]
+            #:when (exported-index-desc? desc)
+            #:do [(define name (exported-index-desc-name desc))
+                  (define from-libs (exported-index-desc-from-libs desc))])
+        (hash-update! database name (λ (old) (cons from-libs old)) '())))
+
     (cond
       [(and xref-index load-collections-xref exported-index-desc?)
-       (λ (x)
-         (unless database
-           (build-database!))
-         (hash-ref database x #f))]
-      [else (λ (x) #f)]))
+       (set! find-entry
+             (λ (x)
+               (unless database
+                 (build-database!))
+               (hash-ref database x #f)))]
+      [else (set! find-entry (λ (x) #f))])
 
-  ;; precondition: variables are all defined
-  (define (build-database!)
-    (set! database (make-hash))
-    (for ([e (in-list (xref-index (load-collections-xref)))]
-          #:do [(define desc (entry-desc e))]
-          #:when (exported-index-desc? desc)
-          #:do [(define name (exported-index-desc-name desc))
-                (define from-libs (exported-index-desc-from-libs desc))])
-      (hash-update! database name (λ (old) (cons from-libs old)) '()))))
-
+    (find-entry x)))
