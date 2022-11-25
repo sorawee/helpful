@@ -3,17 +3,22 @@
          @for-label[helpful
                     (except-in racket/base #%top)]]
 
-@title{helpful: suggests a closest variable name on unbound identifier error.}
+@title{helpful: suggests a closest identifier name on unbound identifier error.}
 @author[@author+email["Sorawee Porncharoenwase" "sorawee.pwase@gmail.com"]]
 
 @defmodule[helpful]
 
-This module provides an ability to suggest a closest variable name on unbound identifier error.
+This module provides an ability to provide suggestion on unbound identifier error.
 Simply use @racket[(require helpful)] where you want this feature.
 
+One suggestion is hinting a ``closest'' identifier name.
 The definition of ``closest'' is according to the @link["https://en.wikipedia.org/wiki/Levenshtein_distance"]{Levenshtein distance}.
 It breaks a tie by the alphabetical order,
 with module and lexical bindings being prioritized over imported identifiers.
+
+Another suggestion is hinting modules that could be imported to make the variable bound.
+This feature consults Scribble and thus is only available if Scribble and
+the Racket Documentation index are installed.
 
 The module requires Racket 8.7 at minimum.
 
@@ -42,6 +47,11 @@ The module requires Racket 8.7 at minimum.
     (module test racket
       (require helpful)
       (defun (fact) 1)))
+  (code:comment @#,elem{Suggestion for a module to import})
+  (eval:error
+    (module test racket/base
+      (require helpful)
+      ->))
 ]
 
 @section{Limitations}
