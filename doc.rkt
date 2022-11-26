@@ -2,21 +2,31 @@
 
 (provide find-entry)
 
-(require racket/splicing
-         syntax/parse/define
+(require syntax/parse/define
          (for-syntax racket/base))
 
 (define-syntax-parse-rule (import m x)
   (with-handlers ([exn:fail:filesystem:missing-module? (λ (e) #f)])
     (dynamic-require 'm 'x)))
 
-(define-syntax-parse-rule (with-import ([mod x:id ...+] ...) body ...+)
+(define-syntax-parse-rule (with-import ([mod x:id ...+] ...)
+                            #:on-successful successful-body ...+
+                            #:on-failure failure-body ...+
+                            #:body body ...+)
   #:with [[module ...] ...]
   (for/list ([x (in-list (attribute x))] [mod (in-list (attribute mod))])
     (for/list ([x (in-list x)])
       mod))
 
-  (splicing-let ({~@ . ([x (import module x)] ...)} ...)
+  (begin
+    (define (fail-proc)
+      failure-body ...)
+    (let ()
+      {~@ (define x (import module x)) ...} ...
+      (cond
+        [(and {~@ x ...} ...)
+         successful-body ...]
+        [else (fail-proc)]))
     body ...))
 
 (define database #f)
@@ -28,7 +38,7 @@
                 [scribble/manual-struct exported-index-desc?
                                         exported-index-desc-name
                                         exported-index-desc-from-libs])
-    ;; precondition: variables are all defined
+    #:on-successful
     (define (build-database!)
       (set! database (make-hash))
       (for ([e (in-list (xref-index (load-collections-xref)))]
@@ -38,13 +48,14 @@
                   (define from-libs (exported-index-desc-from-libs desc))])
         (hash-update! database name (λ (old) (cons from-libs old)) '())))
 
-    (cond
-      [(and xref-index load-collections-xref exported-index-desc?)
-       (set! find-entry
-             (λ (x)
-               (unless database
-                 (build-database!))
-               (hash-ref database x #f)))]
-      [else (set! find-entry (λ (x) #f))])
+    (set! find-entry
+          (λ (x)
+            (unless database
+              (build-database!))
+            (hash-ref database x #f)))
 
+    #:on-failure
+    (set! find-entry (λ (x) #f))
+
+    #:body
     (find-entry x)))
