@@ -11,8 +11,7 @@
 
 (define-syntax-parse-rule (with-import ([mod x:id ...+] ...)
                             #:on-successful successful-body ...+
-                            #:on-failure failure-body ...+
-                            #:body body ...+)
+                            #:on-failure failure-body ...+)
   #:with [[module ...] ...]
   (for/list ([x (in-list (attribute x))] [mod (in-list (attribute mod))])
     (for/list ([x (in-list x)])
@@ -26,8 +25,7 @@
       (cond
         [(and {~@ x ...} ...)
          successful-body ...]
-        [else (fail-proc)]))
-    body ...))
+        [else (fail-proc)]))))
 
 (define database #f)
 
@@ -55,7 +53,6 @@
             (hash-ref database x #f)))
 
     #:on-failure
-    (set! find-entry (λ (x) #f))
+    (set! find-entry (λ (x) #f)))
 
-    #:body
-    (find-entry x)))
+  (find-entry x))
