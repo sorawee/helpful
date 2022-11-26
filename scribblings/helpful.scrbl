@@ -1,6 +1,9 @@
 #lang scribble/manual
 @require[scribble/example
+         scribble/bnf
          @for-label[helpful
+                    helpful/suggest
+                    (only-in racket/contract none/c)
                     (except-in racket/base #%top)]]
 
 @title{helpful: providing suggestions on unbound identifier error.}
@@ -8,8 +11,21 @@
 
 @defmodule[helpful]
 
-This module provides suggestions on unbound identifier error.
-Simply use @racket[(require helpful)] where you want this feature.
+This package provides suggestions on unbound identifier error.
+It requires Racket 8.7 at minimum.
+
+@section{How to use it?}
+
+There are two ways to activate the suggestions.
+
+@itemlist[
+  @item{Using @exec{raco helpful} as a replacement of @exec{racket}}
+  @item{Adding @racket[(require helpful)] in a module that you want to get suggestions and running @exec{racket} normally}
+]
+
+@section{Suggestions}
+
+Currently, the package provides two kinds of suggestions.
 
 One suggestion is hinting a ``closest'' identifier name,
 which could be helpful when the error is caused by a typo mistake.
@@ -21,8 +37,6 @@ Another suggestion is hinting modules that could be imported to make the identif
 which could be helpful when you forgot to import the desired module.
 This feature consults Scribble and the Racket documentation index and thus is only available
 if they are installed.
-
-The module requires Racket 8.7 at minimum.
 
 @section{Examples}
 
@@ -68,7 +82,17 @@ The feature only works reliably for code at @tech[#:doc '(lib "scribblings/refer
 @section{API}
 
 @defform[(#%top . x)]{
-  Does what's described above.
+  A replacement of Racket's @racket[#%top] that provides suggestions.
+  A @hash-lang[] that wishes to provide the suggestions by default
+  can simply reprovide @racket[#%top].
+}
+
+@subsection{Internals}
+
+@defmodule[helpful/suggest]
+
+@defproc[(suggest [x identifier?]) none/c]{
+  Given an unbound identifier @racket[x], this function raises the unbound id error with the suggestions.
 }
 
 @section{More examples}

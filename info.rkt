@@ -8,3 +8,8 @@
 (define version "2.0")
 (define pkg-authors '(sorawee))
 (define license '(Apache-2.0 OR MIT))
+(define raco-commands
+  '(("helpful"
+     helpful/raco
+     "helpfully provide suggestions"
+     42)))
