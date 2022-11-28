@@ -1,5 +1,7 @@
 #lang racket/base
 
+(module test racket/base)
+
 (require racket/cmdline
          racket/match
          "suggest.rkt")

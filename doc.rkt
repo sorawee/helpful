@@ -29,6 +29,7 @@
 
 (define database #f)
 
+;; find-entry :: symbol? -> (or/c #f (listof (listof symbol?)))
 (define (find-entry x)
   (with-import ([scribble/xref xref-index
                                entry-desc]

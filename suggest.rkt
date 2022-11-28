@@ -35,24 +35,29 @@
   ;; prioritize non-required identifiers
   (append (sort pre symbol<?) (sort post symbol<?)))
 
+;; import->string :: (listof symbol?) #:before-first string? -> string?
 (define (import->string import #:before-first [before-first ""])
   (string-join (for/list ([x (in-list import)])
                  (format "`~a'" x))
                " or "
                #:before-first before-first))
 
+;; imports->string :: (listof (listof symbol?)) -> string?
 (define (imports->string imports)
   (string-join
    (for/list ([import (in-list imports)])
      (import->string import #:before-first "   "))
    "\n"))
 
-(define (suggest x)
-  (define all-vars (get-all-vars x))
+;; suggest :: identifier? #:closest? boolean? #:import? boolean? -> none/c
+(define (suggest x
+                 #:closest? [closest? #t]
+                 #:import? [import? #t])
   (define closest
-    (find-closest (symbol->string (syntax-e x))
-                  (map symbol->string all-vars)))
-  (define imports (find-entry (syntax-e x)))
+    (and closest?
+         (find-closest (symbol->string (syntax-e x))
+                       (map symbol->string (get-all-vars x)))))
+  (define imports (and import? (find-entry (syntax-e x))))
 
   (cond
     [(or closest imports)

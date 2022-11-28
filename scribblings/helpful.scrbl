@@ -3,7 +3,7 @@
          scribble/bnf
          @for-label[helpful
                     helpful/suggest
-                    (only-in racket/contract none/c)
+                    (only-in racket/contract any/c none/c)
                     (except-in racket/base #%top)]]
 
 @title{helpful: providing suggestions on unbound identifier error.}
@@ -91,8 +91,12 @@ The feature only works reliably for code at @tech[#:doc '(lib "scribblings/refer
 
 @defmodule[helpful/suggest]
 
-@defproc[(suggest [x identifier?]) none/c]{
+@defproc[(suggest [x identifier?]
+                  [#:closest? closest? any/c #t]
+                  [#:import? import? any/c #t]) none/c]{
   Given an unbound identifier @racket[x], this function raises the unbound id error with the suggestions.
+  If @racket[closest?] is @racket[#f], the closest identifier suggestion will be excluded.
+  If @racket[import?] is @racket[#f], the import suggestion will be excluded.
 }
 
 @section{More examples}
